@@ -147,6 +147,8 @@ func (image *Image) Mount(root, rw, fs string) error {
 		return filesystems.MountAUFS(layers, rw, root)
 	case "overlayfs":
 		return filesystems.MountOverlayFS(layers, rw, root)
+	case "unionfs-fuse":
+		return filesystems.MountUnionFuseFS(layers, rw, root)
 	}
 	return fmt.Errorf("Unknown fs: %s", fs)
 }

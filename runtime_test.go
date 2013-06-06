@@ -21,6 +21,7 @@ const unitTestImageName string = "docker-ut"
 const unitTestStoreBase string = "/var/lib/docker/unit-tests"
 
 const unitTestFs = "aufs"
+
 //const unitTestFs = "overlayfs"
 
 func nuke(runtime *Runtime) error {

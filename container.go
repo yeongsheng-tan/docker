@@ -851,6 +851,8 @@ func (container *Container) Unmount(fs string) error {
 			return err
 		}
 		return filesystems.UnmountOverlayFS(container.RootfsPath(), layers)
+	case "unionfs-fuse":
+		return filesystems.UnmountUnionFuseFS(container.RootfsPath())
 	}
 	return fmt.Errorf("unknown fs: %s", fs)
 }

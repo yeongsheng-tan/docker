@@ -38,7 +38,7 @@ func (srv *Server) ContainerKill(name string) error {
 func (srv *Server) ContainerExport(name string, out io.Writer) error {
 	if container := srv.runtime.Get(name); container != nil {
 
-		data, err := container.Export()
+		data, err := container.Export(srv.runtime.fs)
 		if err != nil {
 			return err
 		}
@@ -664,7 +664,7 @@ func (srv *Server) ContainerCreate(config *Config) (string, error) {
 
 func (srv *Server) ContainerRestart(name string, t int) error {
 	if container := srv.runtime.Get(name); container != nil {
-		if err := container.Restart(t); err != nil {
+		if err := container.Restart(t, srv.runtime.fs); err != nil {
 			return fmt.Errorf("Error restarting container %s: %s", name, err.Error())
 		}
 	} else {
@@ -753,7 +753,7 @@ func (srv *Server) ImageGetCached(imgId string, config *Config) (*Image, error) 
 
 func (srv *Server) ContainerStart(name string) error {
 	if container := srv.runtime.Get(name); container != nil {
-		if err := container.Start(); err != nil {
+		if err := container.Start(srv.runtime.fs); err != nil {
 			return fmt.Errorf("Error starting container %s: %s", name, err.Error())
 		}
 	} else {
@@ -869,11 +869,11 @@ func (srv *Server) ImageInspect(name string) (*Image, error) {
 	return nil, fmt.Errorf("No such image: %s", name)
 }
 
-func NewServer(autoRestart bool) (*Server, error) {
+func NewServer(autoRestart bool, fs string) (*Server, error) {
 	if runtime.GOARCH != "amd64" {
 		log.Fatalf("The docker runtime currently only supports amd64 (not %s). This will change in the future. Aborting.", runtime.GOARCH)
 	}
-	runtime, err := NewRuntime(autoRestart)
+	runtime, err := NewRuntime(autoRestart, fs)
 	if err != nil {
 		return nil, err
 	}

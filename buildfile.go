@@ -186,10 +186,10 @@ func (b *buildFile) CmdAdd(args string) error {
 	if container == nil {
 		return fmt.Errorf("Error while creating the container (CmdAdd)")
 	}
-	if err := container.EnsureMounted(); err != nil {
+	if err := container.EnsureMounted(b.runtime.fs); err != nil {
 		return err
 	}
-	defer container.Unmount()
+	defer container.Unmount(b.runtime.fs)
 
 	origPath := path.Join(b.context, orig)
 	destPath := path.Join(container.RootfsPath(), dest)
@@ -241,7 +241,7 @@ func (b *buildFile) run() (string, error) {
 	b.tmpContainers[c.ID] = struct{}{}
 
 	//start the container
-	if err := c.Start(); err != nil {
+	if err := c.Start(b.runtime.fs); err != nil {
 		return "", err
 	}
 

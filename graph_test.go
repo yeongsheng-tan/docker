@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"errors"
+	"github.com/dotcloud/docker/filesystems"
 	"github.com/dotcloud/docker/utils"
 	"io"
 	"io/ioutil"
@@ -140,12 +141,12 @@ func TestMount(t *testing.T) {
 	if err := os.MkdirAll(rw, 0700); err != nil {
 		t.Fatal(err)
 	}
-	if err := image.Mount(rootfs, rw); err != nil {
+	if err := image.Mount(rootfs, rw, unitTestFs); err != nil {
 		t.Fatal(err)
 	}
 	// FIXME: test for mount contents
 	defer func() {
-		if err := Unmount(rootfs); err != nil {
+		if err := filesystems.Unmount(rootfs); err != nil {
 			t.Error(err)
 		}
 	}()

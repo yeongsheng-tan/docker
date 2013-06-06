@@ -16,7 +16,7 @@ run    mkdir -p /var/run/sshd
 `
 
 func TestBuild(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,7 +43,7 @@ func TestBuild(t *testing.T) {
 	}
 	defer runtime.Destroy(container)
 
-	output, err := container.Output()
+	output, err := container.Output(runtime.fs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -62,7 +62,7 @@ func TestBuild(t *testing.T) {
 	}
 	defer runtime.Destroy(container2)
 
-	output, err = container2.Output()
+	output, err = container2.Output(runtime.fs)
 	if err != nil {
 		t.Fatal(err)
 	}

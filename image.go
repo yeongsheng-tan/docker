@@ -6,12 +6,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/dotcloud/docker/filesystems"
 	"github.com/dotcloud/docker/utils"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
-	"os/exec"
 	"path"
 	"strings"
 	"time"
@@ -117,29 +116,6 @@ func jsonPath(root string) string {
 	return path.Join(root, "json")
 }
 
-func MountAUFS(ro []string, rw string, target string) error {
-	// FIXME: Now mount the layers
-	rwBranch := fmt.Sprintf("%v=rw", rw)
-	roBranches := ""
-	for _, layer := range ro {
-		roBranches += fmt.Sprintf("%v=ro+wh:", layer)
-	}
-	branches := fmt.Sprintf("br:%v:%v", rwBranch, roBranches)
-
-	//if error, try to load aufs kernel module
-	if err := mount("none", target, "aufs", 0, branches); err != nil {
-		log.Printf("Kernel does not support AUFS, trying to load the AUFS module with modprobe...")
-		if err := exec.Command("modprobe", "aufs").Run(); err != nil {
-			return fmt.Errorf("Unable to load the AUFS module")
-		}
-		log.Printf("...module loaded.")
-		if err := mount("none", target, "aufs", 0, branches); err != nil {
-			return fmt.Errorf("Unable to mount using aufs")
-		}
-	}
-	return nil
-}
-
 // TarLayer returns a tar archive of the image's filesystem layer.
 func (image *Image) TarLayer(compression Compression) (Archive, error) {
 	layerPath, err := image.layer()
@@ -149,8 +125,8 @@ func (image *Image) TarLayer(compression Compression) (Archive, error) {
 	return Tar(layerPath, compression)
 }
 
-func (image *Image) Mount(root, rw string) error {
-	if mounted, err := Mounted(root); err != nil {
+func (image *Image) Mount(root, rw, fs string) error {
+	if mounted, err := filesystems.Mounted(root); err != nil {
 		return err
 	} else if mounted {
 		return fmt.Errorf("%s is already mounted", root)
@@ -166,10 +142,13 @@ func (image *Image) Mount(root, rw string) error {
 	if err := os.Mkdir(rw, 0755); err != nil && !os.IsExist(err) {
 		return err
 	}
-	if err := MountAUFS(layers, rw, root); err != nil {
-		return err
+	switch fs {
+	case "aufs":
+		return filesystems.MountAUFS(layers, rw, root)
+	case "overlayfs":
+		return filesystems.MountOverlayFS(layers, rw, root)
 	}
-	return nil
+	return fmt.Errorf("Unknown fs: %s", fs)
 }
 
 func (image *Image) Changes(rw string) ([]Change, error) {

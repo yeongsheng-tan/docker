@@ -19,7 +19,7 @@ import (
 )
 
 func TestGetAuth(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,7 +63,7 @@ func TestGetAuth(t *testing.T) {
 }
 
 func TestGetVersion(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +87,7 @@ func TestGetVersion(t *testing.T) {
 }
 
 func TestGetInfo(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -112,7 +112,7 @@ func TestGetInfo(t *testing.T) {
 }
 
 func TestGetImagesJSON(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -211,7 +211,7 @@ func TestGetImagesJSON(t *testing.T) {
 }
 
 func TestGetImagesViz(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -239,7 +239,7 @@ func TestGetImagesViz(t *testing.T) {
 }
 
 func TestGetImagesSearch(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -270,7 +270,7 @@ func TestGetImagesSearch(t *testing.T) {
 }
 
 func TestGetImagesHistory(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -294,7 +294,7 @@ func TestGetImagesHistory(t *testing.T) {
 }
 
 func TestGetImagesByName(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -317,7 +317,7 @@ func TestGetImagesByName(t *testing.T) {
 }
 
 func TestGetContainersJSON(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -356,7 +356,7 @@ func TestGetContainersJSON(t *testing.T) {
 }
 
 func TestGetContainersExport(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -378,7 +378,7 @@ func TestGetContainersExport(t *testing.T) {
 	}
 	defer runtime.Destroy(container)
 
-	if err := container.Run(); err != nil {
+	if err := container.Run(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -411,7 +411,7 @@ func TestGetContainersExport(t *testing.T) {
 }
 
 func TestGetContainersChanges(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -433,7 +433,7 @@ func TestGetContainersChanges(t *testing.T) {
 	}
 	defer runtime.Destroy(container)
 
-	if err := container.Run(); err != nil {
+	if err := container.Run(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -459,7 +459,7 @@ func TestGetContainersChanges(t *testing.T) {
 }
 
 func TestGetContainersByName(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -495,7 +495,7 @@ func TestGetContainersByName(t *testing.T) {
 }
 
 func TestPostAuth(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -529,7 +529,7 @@ func TestPostAuth(t *testing.T) {
 }
 
 func TestPostCommit(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -551,7 +551,7 @@ func TestPostCommit(t *testing.T) {
 	}
 	defer runtime.Destroy(container)
 
-	if err := container.Run(); err != nil {
+	if err := container.Run(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -580,7 +580,7 @@ func TestPostCommit(t *testing.T) {
 func TestPostImagesCreate(t *testing.T) {
 	// FIXME: Use the staging in order to perform tests
 
-	// runtime, err := newTestRuntime()
+	// runtime, err := newTestRuntime(unitTestFs)
 	// if err != nil {
 	// 	t.Fatal(err)
 	// }
@@ -644,7 +644,7 @@ func TestPostImagesCreate(t *testing.T) {
 }
 
 func TestPostImagesInsert(t *testing.T) {
-	// runtime, err := newTestRuntime()
+	// runtime, err := newTestRuntime(unitTestFs)
 	// if err != nil {
 	// 	t.Fatal(err)
 	// }
@@ -722,7 +722,7 @@ func TestPostImagesInsert(t *testing.T) {
 
 func TestPostImagesPush(t *testing.T) {
 	//FIXME: Use staging in order to perform tests
-	// runtime, err := newTestRuntime()
+	// runtime, err := newTestRuntime(unitTestFs)
 	// if err != nil {
 	// 	t.Fatal(err)
 	// }
@@ -787,7 +787,7 @@ func TestPostImagesPush(t *testing.T) {
 func TestPostImagesTag(t *testing.T) {
 	// FIXME: Use staging in order to perform tests
 
-	// runtime, err := newTestRuntime()
+	// runtime, err := newTestRuntime(unitTestFs)
 	// if err != nil {
 	// 	t.Fatal(err)
 	// }
@@ -816,7 +816,7 @@ func TestPostImagesTag(t *testing.T) {
 }
 
 func TestPostContainersCreate(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -856,7 +856,7 @@ func TestPostContainersCreate(t *testing.T) {
 		t.Fatalf("Container not created")
 	}
 
-	if err := container.Run(); err != nil {
+	if err := container.Run(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -870,7 +870,7 @@ func TestPostContainersCreate(t *testing.T) {
 }
 
 func TestPostContainersKill(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -890,7 +890,7 @@ func TestPostContainersKill(t *testing.T) {
 	}
 	defer runtime.Destroy(container)
 
-	if err := container.Start(); err != nil {
+	if err := container.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -914,7 +914,7 @@ func TestPostContainersKill(t *testing.T) {
 }
 
 func TestPostContainersRestart(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -934,7 +934,7 @@ func TestPostContainersRestart(t *testing.T) {
 	}
 	defer runtime.Destroy(container)
 
-	if err := container.Start(); err != nil {
+	if err := container.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -970,7 +970,7 @@ func TestPostContainersRestart(t *testing.T) {
 }
 
 func TestPostContainersStart(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1016,7 +1016,7 @@ func TestPostContainersStart(t *testing.T) {
 }
 
 func TestPostContainersStop(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1036,7 +1036,7 @@ func TestPostContainersStop(t *testing.T) {
 	}
 	defer runtime.Destroy(container)
 
-	if err := container.Start(); err != nil {
+	if err := container.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -1065,7 +1065,7 @@ func TestPostContainersStop(t *testing.T) {
 }
 
 func TestPostContainersWait(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1085,7 +1085,7 @@ func TestPostContainersWait(t *testing.T) {
 	}
 	defer runtime.Destroy(container)
 
-	if err := container.Start(); err != nil {
+	if err := container.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -1109,7 +1109,7 @@ func TestPostContainersWait(t *testing.T) {
 }
 
 func TestPostContainersAttach(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1130,7 +1130,7 @@ func TestPostContainersAttach(t *testing.T) {
 	defer runtime.Destroy(container)
 
 	// Start the process
-	if err := container.Start(); err != nil {
+	if err := container.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -1197,7 +1197,7 @@ func TestPostContainersAttach(t *testing.T) {
 // FIXME: Test deleting container with volume
 // FIXME: Test deleting volume in use by other container
 func TestDeleteContainers(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1214,7 +1214,7 @@ func TestDeleteContainers(t *testing.T) {
 	}
 	defer runtime.Destroy(container)
 
-	if err := container.Run(); err != nil {
+	if err := container.Run(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 

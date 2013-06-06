@@ -20,6 +20,9 @@ const unitTestImageName string = "docker-ut"
 
 const unitTestStoreBase string = "/var/lib/docker/unit-tests"
 
+const unitTestFs = "aufs"
+//const unitTestFs = "overlayfs"
+
 func nuke(runtime *Runtime) error {
 	var wg sync.WaitGroup
 	for _, container := range runtime.List() {
@@ -58,7 +61,7 @@ func init() {
 	NetworkBridgeIface = "testdockbr0"
 
 	// Make it our Store root
-	runtime, err := NewRuntimeFromDirectory(unitTestStoreBase, false)
+	runtime, err := NewRuntimeFromDirectory(unitTestStoreBase, false, unitTestFs)
 	if err != nil {
 		panic(err)
 	}
@@ -75,7 +78,7 @@ func init() {
 
 // FIXME: test that ImagePull(json=true) send correct json output
 
-func newTestRuntime() (*Runtime, error) {
+func newTestRuntime(fs string) (*Runtime, error) {
 	root, err := ioutil.TempDir("", "docker-test")
 	if err != nil {
 		return nil, err
@@ -87,7 +90,7 @@ func newTestRuntime() (*Runtime, error) {
 		return nil, err
 	}
 
-	runtime, err := NewRuntimeFromDirectory(root, false)
+	runtime, err := NewRuntimeFromDirectory(root, false, fs)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +109,7 @@ func GetTestImage(runtime *Runtime) *Image {
 }
 
 func TestRuntimeCreate(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -181,7 +184,7 @@ func TestRuntimeCreate(t *testing.T) {
 }
 
 func TestDestroy(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -228,7 +231,7 @@ func TestDestroy(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -291,7 +294,7 @@ func findAvailalblePort(runtime *Runtime, port int) (*Container, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := container.Start(); err != nil {
+	if err := container.Start(runtime.fs); err != nil {
 		if strings.Contains(err.Error(), "address already in use") {
 			return nil, nil
 		}
@@ -302,7 +305,7 @@ func findAvailalblePort(runtime *Runtime, port int) (*Container, error) {
 
 // Run a container with a TCP port allocated, and test that it can receive connections on localhost
 func TestAllocatePortLocalhost(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -370,7 +373,7 @@ func TestRestore(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	runtime1, err := NewRuntimeFromDirectory(root, false)
+	runtime1, err := NewRuntimeFromDirectory(root, false, unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -401,7 +404,7 @@ func TestRestore(t *testing.T) {
 	defer runtime1.Destroy(container2)
 
 	// Start the container non blocking
-	if err := container2.Start(); err != nil {
+	if err := container2.Start(runtime1.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -421,7 +424,7 @@ func TestRestore(t *testing.T) {
 	if len(runtime1.List()) != 2 {
 		t.Errorf("Expected 2 container, %v found", len(runtime1.List()))
 	}
-	if err := container1.Run(); err != nil {
+	if err := container1.Run(runtime1.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -431,7 +434,7 @@ func TestRestore(t *testing.T) {
 
 	// Here are are simulating a docker restart - that is, reloading all containers
 	// from scratch
-	runtime2, err := NewRuntimeFromDirectory(root, false)
+	runtime2, err := NewRuntimeFromDirectory(root, false, unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -453,7 +456,7 @@ func TestRestore(t *testing.T) {
 	if container3 == nil {
 		t.Fatal("Unable to Get container")
 	}
-	if err := container3.Run(); err != nil {
+	if err := container3.Run(runtime2.fs); err != nil {
 		t.Fatal(err)
 	}
 	container2.State.Running = false

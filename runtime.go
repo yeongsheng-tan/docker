@@ -32,6 +32,7 @@ type Runtime struct {
 	autoRestart    bool
 	volumes        *Graph
 	srv            *Server
+	fs             string
 }
 
 var sysInitPath string
@@ -143,7 +144,7 @@ func (runtime *Runtime) Register(container *Container) error {
 				utils.Debugf("Restarting")
 				container.State.Ghost = false
 				container.State.setStopped(0)
-				if err := container.Start(); err != nil {
+				if err := container.Start(runtime.fs); err != nil {
 					return err
 				}
 				nomonitor = true
@@ -163,7 +164,7 @@ func (runtime *Runtime) Register(container *Container) error {
 		close(container.waitLock)
 	} else if !nomonitor {
 		container.allocateNetwork()
-		go container.monitor()
+		go container.monitor(runtime.fs)
 	}
 	return nil
 }
@@ -193,7 +194,7 @@ func (runtime *Runtime) Destroy(container *Container) error {
 	if mounted, err := container.Mounted(); err != nil {
 		return err
 	} else if mounted {
-		if err := container.Unmount(); err != nil {
+		if err := container.Unmount(runtime.fs); err != nil {
 			return fmt.Errorf("Unable to unmount container %v: %v", container.ID, err)
 		}
 	}
@@ -245,8 +246,8 @@ func (runtime *Runtime) UpdateCapabilities(quiet bool) {
 }
 
 // FIXME: harmonize with NewGraph()
-func NewRuntime(autoRestart bool) (*Runtime, error) {
-	runtime, err := NewRuntimeFromDirectory("/var/lib/docker", autoRestart)
+func NewRuntime(autoRestart bool, fs string) (*Runtime, error) {
+	runtime, err := NewRuntimeFromDirectory("/var/lib/docker", autoRestart, fs)
 	if err != nil {
 		return nil, err
 	}
@@ -263,7 +264,7 @@ func NewRuntime(autoRestart bool) (*Runtime, error) {
 	return runtime, nil
 }
 
-func NewRuntimeFromDirectory(root string, autoRestart bool) (*Runtime, error) {
+func NewRuntimeFromDirectory(root string, autoRestart bool, fs string) (*Runtime, error) {
 	runtimeRepo := path.Join(root, "containers")
 
 	if err := os.MkdirAll(runtimeRepo, 0700); err != nil && !os.IsExist(err) {
@@ -300,6 +301,7 @@ func NewRuntimeFromDirectory(root string, autoRestart bool) (*Runtime, error) {
 		capabilities:   &Capabilities{},
 		autoRestart:    autoRestart,
 		volumes:        volumes,
+		fs:             fs,
 	}
 
 	if err := runtime.restore(); err != nil {

@@ -5,7 +5,7 @@ import (
 )
 
 func TestCreateRm(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +38,7 @@ func TestCreateRm(t *testing.T) {
 }
 
 func TestCreateStartRestartStopStartKillRm(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}

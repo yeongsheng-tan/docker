@@ -15,7 +15,7 @@ import (
 )
 
 func TestIDFormat(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,7 +39,7 @@ func TestIDFormat(t *testing.T) {
 }
 
 func TestMultipleAttachRestart(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +70,7 @@ func TestMultipleAttachRestart(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := container.Start(); err != nil {
+	if err := container.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 	l1, err := bufio.NewReader(stdout1).ReadString('\n')
@@ -111,7 +111,7 @@ func TestMultipleAttachRestart(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := container.Start(); err != nil {
+	if err := container.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -142,7 +142,7 @@ func TestMultipleAttachRestart(t *testing.T) {
 }
 
 func TestDiff(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -162,7 +162,7 @@ func TestDiff(t *testing.T) {
 	}
 	defer runtime.Destroy(container1)
 
-	if err := container1.Run(); err != nil {
+	if err := container1.Run(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -203,7 +203,7 @@ func TestDiff(t *testing.T) {
 	}
 	defer runtime.Destroy(container2)
 
-	if err := container2.Run(); err != nil {
+	if err := container2.Run(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -230,7 +230,7 @@ func TestDiff(t *testing.T) {
 	}
 	defer runtime.Destroy(container3)
 
-	if err := container3.Run(); err != nil {
+	if err := container3.Run(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -251,7 +251,7 @@ func TestDiff(t *testing.T) {
 }
 
 func TestCommitAutoRun(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -272,7 +272,7 @@ func TestCommitAutoRun(t *testing.T) {
 	if container1.State.Running {
 		t.Errorf("Container shouldn't be running")
 	}
-	if err := container1.Run(); err != nil {
+	if err := container1.Run(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 	if container1.State.Running {
@@ -306,7 +306,7 @@ func TestCommitAutoRun(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := container2.Start(); err != nil {
+	if err := container2.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 	container2.Wait()
@@ -330,7 +330,7 @@ func TestCommitAutoRun(t *testing.T) {
 }
 
 func TestCommitRun(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -352,7 +352,7 @@ func TestCommitRun(t *testing.T) {
 	if container1.State.Running {
 		t.Errorf("Container shouldn't be running")
 	}
-	if err := container1.Run(); err != nil {
+	if err := container1.Run(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 	if container1.State.Running {
@@ -388,7 +388,7 @@ func TestCommitRun(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := container2.Start(); err != nil {
+	if err := container2.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 	container2.Wait()
@@ -412,7 +412,7 @@ func TestCommitRun(t *testing.T) {
 }
 
 func TestStart(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -436,7 +436,7 @@ func TestStart(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := container.Start(); err != nil {
+	if err := container.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -446,7 +446,7 @@ func TestStart(t *testing.T) {
 	if !container.State.Running {
 		t.Errorf("Container should be running")
 	}
-	if err := container.Start(); err == nil {
+	if err := container.Start(runtime.fs); err == nil {
 		t.Fatalf("A running containter should be able to be started")
 	}
 
@@ -456,7 +456,7 @@ func TestStart(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -475,7 +475,7 @@ func TestRun(t *testing.T) {
 	if container.State.Running {
 		t.Errorf("Container shouldn't be running")
 	}
-	if err := container.Run(); err != nil {
+	if err := container.Run(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 	if container.State.Running {
@@ -484,7 +484,7 @@ func TestRun(t *testing.T) {
 }
 
 func TestOutput(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -499,7 +499,7 @@ func TestOutput(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer runtime.Destroy(container)
-	output, err := container.Output()
+	output, err := container.Output(runtime.fs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -509,7 +509,7 @@ func TestOutput(t *testing.T) {
 }
 
 func TestKillDifferentUser(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -528,7 +528,7 @@ func TestKillDifferentUser(t *testing.T) {
 	if container.State.Running {
 		t.Errorf("Container shouldn't be running")
 	}
-	if err := container.Start(); err != nil {
+	if err := container.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -557,7 +557,7 @@ func TestKillDifferentUser(t *testing.T) {
 }
 
 func TestKill(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -575,7 +575,7 @@ func TestKill(t *testing.T) {
 	if container.State.Running {
 		t.Errorf("Container shouldn't be running")
 	}
-	if err := container.Start(); err != nil {
+	if err := container.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -602,7 +602,7 @@ func TestKill(t *testing.T) {
 }
 
 func TestExitCode(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -618,7 +618,7 @@ func TestExitCode(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer runtime.Destroy(trueContainer)
-	if err := trueContainer.Run(); err != nil {
+	if err := trueContainer.Run(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 	if trueContainer.State.ExitCode != 0 {
@@ -633,7 +633,7 @@ func TestExitCode(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer runtime.Destroy(falseContainer)
-	if err := falseContainer.Run(); err != nil {
+	if err := falseContainer.Run(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 	if falseContainer.State.ExitCode != 1 {
@@ -642,7 +642,7 @@ func TestExitCode(t *testing.T) {
 }
 
 func TestRestart(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -656,7 +656,7 @@ func TestRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer runtime.Destroy(container)
-	output, err := container.Output()
+	output, err := container.Output(runtime.fs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -665,7 +665,7 @@ func TestRestart(t *testing.T) {
 	}
 
 	// Run the container again and check the output
-	output, err = container.Output()
+	output, err = container.Output(runtime.fs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -675,7 +675,7 @@ func TestRestart(t *testing.T) {
 }
 
 func TestRestartStdin(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -700,7 +700,7 @@ func TestRestartStdin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := container.Start(); err != nil {
+	if err := container.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := io.WriteString(stdin, "hello world"); err != nil {
@@ -730,7 +730,7 @@ func TestRestartStdin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := container.Start(); err != nil {
+	if err := container.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := io.WriteString(stdin, "hello world #2"); err != nil {
@@ -753,7 +753,7 @@ func TestRestartStdin(t *testing.T) {
 }
 
 func TestUser(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -771,7 +771,7 @@ func TestUser(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer runtime.Destroy(container)
-	output, err := container.Output()
+	output, err := container.Output(runtime.fs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -791,7 +791,7 @@ func TestUser(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer runtime.Destroy(container)
-	output, err = container.Output()
+	output, err = container.Output(runtime.fs)
 	if err != nil || container.State.ExitCode != 0 {
 		t.Fatal(err)
 	}
@@ -811,7 +811,7 @@ func TestUser(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer runtime.Destroy(container)
-	output, err = container.Output()
+	output, err = container.Output(runtime.fs)
 	if err != nil || container.State.ExitCode != 0 {
 		t.Fatal(err)
 	}
@@ -831,7 +831,7 @@ func TestUser(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer runtime.Destroy(container)
-	output, err = container.Output()
+	output, err = container.Output(runtime.fs)
 	if err != nil {
 		t.Fatal(err)
 	} else if container.State.ExitCode != 0 {
@@ -853,7 +853,7 @@ func TestUser(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer runtime.Destroy(container)
-	output, err = container.Output()
+	output, err = container.Output(runtime.fs)
 	if err != nil || container.State.ExitCode != 0 {
 		t.Fatal(err)
 	}
@@ -863,7 +863,7 @@ func TestUser(t *testing.T) {
 }
 
 func TestMultipleContainers(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -892,10 +892,10 @@ func TestMultipleContainers(t *testing.T) {
 	defer runtime.Destroy(container2)
 
 	// Start both containers
-	if err := container1.Start(); err != nil {
+	if err := container1.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
-	if err := container2.Start(); err != nil {
+	if err := container2.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 
@@ -922,7 +922,7 @@ func TestMultipleContainers(t *testing.T) {
 }
 
 func TestStdin(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -947,7 +947,7 @@ func TestStdin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := container.Start(); err != nil {
+	if err := container.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 	defer stdin.Close()
@@ -969,7 +969,7 @@ func TestStdin(t *testing.T) {
 }
 
 func TestTty(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -994,7 +994,7 @@ func TestTty(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := container.Start(); err != nil {
+	if err := container.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 	defer stdin.Close()
@@ -1016,7 +1016,7 @@ func TestTty(t *testing.T) {
 }
 
 func TestEnv(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1036,7 +1036,7 @@ func TestEnv(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer stdout.Close()
-	if err := container.Start(); err != nil {
+	if err := container.Start(runtime.fs); err != nil {
 		t.Fatal(err)
 	}
 	container.Wait()
@@ -1085,7 +1085,7 @@ func grepFile(t *testing.T, path string, pattern string) {
 }
 
 func TestLXCConfig(t *testing.T) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1121,7 +1121,7 @@ func TestLXCConfig(t *testing.T) {
 }
 
 func BenchmarkRunSequencial(b *testing.B) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1136,7 +1136,7 @@ func BenchmarkRunSequencial(b *testing.B) {
 			b.Fatal(err)
 		}
 		defer runtime.Destroy(container)
-		output, err := container.Output()
+		output, err := container.Output(runtime.fs)
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -1150,7 +1150,7 @@ func BenchmarkRunSequencial(b *testing.B) {
 }
 
 func BenchmarkRunParallel(b *testing.B) {
-	runtime, err := newTestRuntime()
+	runtime, err := newTestRuntime(unitTestFs)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1172,7 +1172,7 @@ func BenchmarkRunParallel(b *testing.B) {
 				return
 			}
 			defer runtime.Destroy(container)
-			if err := container.Start(); err != nil {
+			if err := container.Start(runtime.fs); err != nil {
 				complete <- err
 				return
 			}

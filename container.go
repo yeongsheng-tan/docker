@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/dotcloud/docker/filesystems"
 	"github.com/dotcloud/docker/term"
 	"github.com/dotcloud/docker/utils"
 	"github.com/kr/pty"
@@ -404,14 +405,14 @@ func (container *Container) Attach(stdin io.ReadCloser, stdinCloser io.Closer, s
 	})
 }
 
-func (container *Container) Start() error {
+func (container *Container) Start(fs string) error {
 	container.State.lock()
 	defer container.State.unlock()
 
 	if container.State.Running {
 		return fmt.Errorf("The container %s is already running.", container.ID)
 	}
-	if err := container.EnsureMounted(); err != nil {
+	if err := container.EnsureMounted(fs); err != nil {
 		return err
 	}
 	if err := container.allocateNetwork(); err != nil {
@@ -521,25 +522,25 @@ func (container *Container) Start() error {
 	container.waitLock = make(chan struct{})
 
 	container.ToDisk()
-	go container.monitor()
+	go container.monitor(fs)
 	return nil
 }
 
-func (container *Container) Run() error {
-	if err := container.Start(); err != nil {
+func (container *Container) Run(fs string) error {
+	if err := container.Start(fs); err != nil {
 		return err
 	}
 	container.Wait()
 	return nil
 }
 
-func (container *Container) Output() (output []byte, err error) {
+func (container *Container) Output(fs string) (output []byte, err error) {
 	pipe, err := container.StdoutPipe()
 	if err != nil {
 		return nil, err
 	}
 	defer pipe.Close()
-	if err := container.Start(); err != nil {
+	if err := container.Start(fs); err != nil {
 		return nil, err
 	}
 	output, err = ioutil.ReadAll(pipe)
@@ -609,7 +610,7 @@ func (container *Container) waitLxc() error {
 	panic("Unreachable")
 }
 
-func (container *Container) monitor() {
+func (container *Container) monitor(fs string) {
 	// Wait for the program to exit
 	utils.Debugf("Waiting for process")
 
@@ -651,7 +652,7 @@ func (container *Container) monitor() {
 		}
 	}
 
-	if err := container.Unmount(); err != nil {
+	if err := container.Unmount(fs); err != nil {
 		log.Printf("%v: Failed to umount filesystem: %v", container.ID, err)
 	}
 
@@ -739,11 +740,11 @@ func (container *Container) Stop(seconds int) error {
 	return nil
 }
 
-func (container *Container) Restart(seconds int) error {
+func (container *Container) Restart(seconds int, fs string) error {
 	if err := container.Stop(seconds); err != nil {
 		return err
 	}
-	if err := container.Start(); err != nil {
+	if err := container.Start(fs); err != nil {
 		return err
 	}
 	return nil
@@ -775,8 +776,8 @@ func (container *Container) RwChecksum() (string, error) {
 	return utils.HashData(rwData)
 }
 
-func (container *Container) Export() (Archive, error) {
-	if err := container.EnsureMounted(); err != nil {
+func (container *Container) Export(fs string) (Archive, error) {
+	if err := container.EnsureMounted(fs); err != nil {
 		return nil, err
 	}
 	return Tar(container.RootfsPath(), Uncompressed)
@@ -799,21 +800,21 @@ func (container *Container) WaitTimeout(timeout time.Duration) error {
 	panic("Unreachable")
 }
 
-func (container *Container) EnsureMounted() error {
+func (container *Container) EnsureMounted(fs string) error {
 	if mounted, err := container.Mounted(); err != nil {
 		return err
 	} else if mounted {
 		return nil
 	}
-	return container.Mount()
+	return container.Mount(fs)
 }
 
-func (container *Container) Mount() error {
+func (container *Container) Mount(fs string) error {
 	image, err := container.GetImage()
 	if err != nil {
 		return err
 	}
-	return image.Mount(container.RootfsPath(), container.rwPath())
+	return image.Mount(container.RootfsPath(), container.rwPath(), fs)
 }
 
 func (container *Container) Changes() ([]Change, error) {
@@ -832,11 +833,26 @@ func (container *Container) GetImage() (*Image, error) {
 }
 
 func (container *Container) Mounted() (bool, error) {
-	return Mounted(container.RootfsPath())
+	return filesystems.Mounted(container.RootfsPath())
 }
 
-func (container *Container) Unmount() error {
-	return Unmount(container.RootfsPath())
+func (container *Container) Unmount(fs string) error {
+	switch fs {
+	case "aufs":
+		return filesystems.UnmountAUFS(container.RootfsPath())
+	case "overlayfs":
+		image, err := container.GetImage()
+		if err != nil {
+			return err
+		}
+
+		layers, err := image.layers()
+		if err != nil {
+			return err
+		}
+		return filesystems.UnmountOverlayFS(container.RootfsPath(), layers)
+	}
+	return fmt.Errorf("unknown fs: %s", fs)
 }
 
 // ShortID returns a shorthand version of the container's id for convenience.

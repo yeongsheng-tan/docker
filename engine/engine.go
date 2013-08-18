@@ -36,6 +36,17 @@ func New(root string) (*Engine, error) {
 	}, nil
 }
 
+func (eng *Engine) Cleanup() {
+	Debugf("Cleaning up engine")
+	os.Remove(eng.sockPath())
+}
+
+// sockPath returns the path of the unix socket used by the engine to listen for new connections
+func (eng *Engine) sockPath() string {
+	return path.Join(eng.Root, ".engine.sock")
+}
+
+
 // ServeJob overrides the default Beam job handler to add an append-only journal.
 func (eng *Engine) ServeJob(name string, args []string, env map[string]string, streams beam.Streamer, db beam.DB) (err error) {
 	// Start action in journal
@@ -50,7 +61,7 @@ func (eng *Engine) ServeJob(name string, args []string, env map[string]string, s
 }
 
 func (eng *Engine) ListenAndServe() error {
-	sockPath := path.Join(eng.Root, ".engine.sock")
+	sockPath := eng.sockPath()
 	l, err := net.Listen("unix", sockPath)
 	if err != nil {
 		if c, dialErr := net.Dial("unix", sockPath); dialErr != nil {

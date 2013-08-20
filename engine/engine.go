@@ -48,7 +48,7 @@ func (eng *Engine) sockPath() string {
 
 
 // ServeJob overrides the default Beam job handler to add an append-only journal.
-func (eng *Engine) ServeJob(name string, args []string, env map[string]string, streams beam.Streamer, db beam.DB) (err error) {
+func (eng *Engine) ServeJob(name string, args []string, env map[string]string, streams *beam.Streamer, db beam.DB) (err error) {
 	// Start action in journal
 	// journalPath := path.Join(eng.Root, "/.docker/history")
 	// id, err := godj.Start(journalPath, name, args...)

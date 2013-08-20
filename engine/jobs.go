@@ -6,11 +6,11 @@ import (
 	"os/exec"
 )
 
-func JobNotImplemented(name string, args []string, env map[string]string, streams beam.Streamer, db beam.DB) error {
+func JobNotImplemented(name string, args []string, env map[string]string, streams *beam.Streamer, db beam.DB) error {
 	return fmt.Errorf("Not yet implemented: %s", name)
 }
 
-func JobExec(name string, args []string, env map[string]string, streams beam.Streamer, db beam.DB) error {
+func JobExec(name string, args []string, env map[string]string, streams *beam.Streamer, db beam.DB) error {
 	var (
 		cmdName string
 		cmdArgs []string

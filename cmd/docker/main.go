@@ -5,7 +5,6 @@ import (
 	"os"
 	"flag"
 	"log"
-	"net"
 	"github.com/dotcloud/docker/engine"
 	"github.com/dotcloud/beam"
 )
@@ -32,10 +31,13 @@ func main() {
 }
 
 func runJob(eng *engine.Engine, name string, args ...string) error {
-	cPipe, sPipe := net.Pipe()
-	go eng.ServeConn(sPipe)
-	client := &beam.Client{Transport: cPipe}
-	job := client.Job(name, args)
+	pipes := engine.NewPipeHub()
+	go eng.Serve(pipes)
+	client, err := beam.NewClient(pipes)
+	if err != nil {
+		return err
+	}
+	job := client.NewJob(name, args...)
 	job.Streams.WriteTo(os.Stdout, "stdout")
 	job.Streams.WriteTo(os.Stderr, "stderr")
 	// FIXME: handle stdin

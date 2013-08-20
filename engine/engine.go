@@ -2,38 +2,50 @@ package engine
 
 import (
 	"github.com/dotcloud/beam"
-	"net"
 	"path"
 	"os"
 	"os/signal"
 	"fmt"
+	"net"
 )
 
 type Engine struct {
-	*beam.Server
+	*beam.Worker
 	Root string
+	redisTransport beam.Connector
 }
 
 func New(root string) (*Engine, error) {
-	srv := beam.NewServer()
-	srv.RegisterJob("exec",		JobExec)
-	srv.RegisterJob("clone",	JobNotImplemented)
-	srv.RegisterJob("ls",		JobNotImplemented)
-	srv.RegisterJob("ps",		JobNotImplemented)
-	srv.RegisterJob("name",		JobNotImplemented)
-	srv.RegisterJob("import",	JobNotImplemented)
-	srv.RegisterJob("start",	JobNotImplemented)
-	srv.RegisterJob("info",		JobNotImplemented)
-	srv.RegisterJob("serve",	JobNotImplemented)
-	srv.RegisterJob("echo",		JobNotImplemented)
-	srv.RegisterJob("build",	JobNotImplemented)
-	srv.RegisterJob("expose",	JobNotImplemented)
-	srv.RegisterJob("connect",	JobNotImplemented)
-	srv.RegisterJob("prompt",	JobNotImplemented)
-	return &Engine{
-		Server: srv,
-		Root:	root,
-	}, nil
+	// FIXME: setup in-memory redis database,
+	// and connect the worker to it
+	// For now, we connect to an actual redis database,
+	// and use that as a helper
+	addr := os.Getenv("REDIS_ADDR")
+	if addr == "" {
+		return nil, fmt.Errorf("Can't connect to helper redis DB. REDIS_ADDR env variable is not set.")
+	}
+	eng := &Engine{
+		Root: root,
+		redisTransport: &beam.NetTransport{"tcp", addr},
+	}
+	// Setup the worker and attach it to the redis db.
+	w := beam.NewWorker(eng.redisTransport, "/jobs")
+	w.RegisterJob("exec",	JobExec)
+	w.RegisterJob("clone",	JobNotImplemented)
+	w.RegisterJob("ls",	JobNotImplemented)
+	w.RegisterJob("ps",	JobNotImplemented)
+	w.RegisterJob("name",	JobNotImplemented)
+	w.RegisterJob("import",	JobNotImplemented)
+	w.RegisterJob("start",	JobNotImplemented)
+	w.RegisterJob("info",	JobNotImplemented)
+	w.RegisterJob("serve",	JobNotImplemented)
+	w.RegisterJob("echo",	JobNotImplemented)
+	w.RegisterJob("build",	JobNotImplemented)
+	w.RegisterJob("expose",	JobNotImplemented)
+	w.RegisterJob("connect",JobNotImplemented)
+	w.RegisterJob("prompt",	JobNotImplemented)
+	eng.Worker = w
+	return eng, nil
 }
 
 func (eng *Engine) Cleanup() {
@@ -57,10 +69,13 @@ func (eng *Engine) ServeJob(name string, args []string, env map[string]string, s
 	// }
 	// End action in journal
 	// defer godj.End(journalPath, err)
-	return eng.Server.ServeJob(name, args, env, streams, db)
+	return eng.Worker.ServeJob(name, args, env, streams, db)
 }
 
 func (eng *Engine) ListenAndServe() error {
+	// FIXME: this should start the redis database, then run the worker main loop
+	// against it.
+	// For now, we setup a proxy to the helper redis db.
 	sockPath := eng.sockPath()
 	l, err := net.Listen("unix", sockPath)
 	if err != nil {
@@ -86,6 +101,9 @@ func (eng *Engine) ListenAndServe() error {
 		}
 	}()
 	// FIXME: do we need to remove the socket?
-	return eng.Server.Serve(l)
+	return eng.Serve(l)
 }
 
+func (eng *Engine) Serve(l net.Listener) error {
+	return Proxy(l, eng.redisTransport)
+}

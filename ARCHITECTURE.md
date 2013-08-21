@@ -22,6 +22,20 @@ The engine API is designed to natively support a few important things:
 
 ### Connecting to the engine
 
+The first step to using the engine API is to find an endpoint to connect to. This will depend on the context
+in which your program is being executed.
+
+If your program is running *inside* a docker container with introspection privileges, it can get an endpoint
+by opening the unix socket at `/.engine.sock` in the containers filesystem.
+The endpoint will be scoped to that particular container, and your program will not have access to
+anything outside that scope.
+
+If your program is running in the host, *outside* a container, it can get an endpoint scoped to any container by
+opening the `.engine.sock` unix socket in the filesystem of that container.
+
+To get full access to all containers in the engine, simply get an endpoint on the `root container` of the engine.
+See [filesystem layout] for details.
+
 
 
 ### The beam protocol

@@ -75,6 +75,22 @@ Access to inspection data is read-only. All redis commands susceptible to change
 
 ### Running jobs
 
+The second function of the engine API is to get the engine to do things on your program''s behalf.
+
+The fundamental unit of work in the docker engine is a job. Everytime the engine interacts with a container - by
+executing a process, copying directories, downloading archives, changing default configuration etc. - it
+does so with a job.
+
+Using the Beam protocol (which is simply a set of redis commands), your program can instruct the engine
+to execute jobs. It can then communication with the jobs through binary streams, much like unix processes.
+
+Below is the typical sequence of running a job:
+
+	* Create new job entry with name (eg. "exec"), arguments (eg. "echo", "hello", "world") and environment (eg. DEBUG=1 HOME=/home/foo)
+	* Start new job
+	* Read data from output streams (stdout, stderr...) and write data to input streams (stdin...)
+	* Wait for job to complete or run more jobs in parallel
+
 
 ### Available jobs
 

@@ -139,6 +139,10 @@ Plugins are distributed and installed exactly like regular containers. In fact t
 
 ### Filesystem layout
 
+When the Docker engine starts, it uses a directory on the host filesystem as its `root container`.
+All operations of the engine are confined that that directory: it will not affect any other part of the
+host filesystem. Multiple engines can run in parallel, as long as they each have a separate root container.
+
 
 ## Execution environment
 

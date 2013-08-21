@@ -56,6 +56,22 @@ slave database for later replay or retrieval.
 
 ### Inspecting a container
 
+The first function of the engine API is to expose interesting data relative to a container
+for inspection by your program. The following data is available for inspection:
+
+	* Engine information: version, uptime, 
+	* Container metadata: author, version, package name, creation date, signature.
+	* Container configuration: startup processes, ports to expose, directories to persist, default environment, version of docker required.
+	* Container history: a complete record of all the operations which led from an empty directory to the current state of the container.
+	* Services: the network addresses of remote services accessible from the container.
+	* User data: a reserved space for application-specific data.
+	* Children: a list of containers nested inside the current container.
+
+Your program can query this data using standard redis commands. It can also watch for changes using the
+synchronization features of Beam (see [The Beam protocol]).
+
+Access to inspection data is read-only. All redis commands susceptible to change the data will fail.
+
 
 ### Running jobs
 

@@ -40,6 +40,19 @@ See [filesystem layout] for details.
 
 ### The beam protocol
 
+Once your program is connected to the engine, it can start communicating using the Beam protocol,
+documented at http://github.com/dotcloud/beam. A short description of Beam is that it implements
+querying and watching structured data, running jobs with a unix-style interface,
+and sending and receiving multiple binary streams.
+
+The interesting part is that Beam does all this *on top of the Redis protocol*. That makes it extremely
+easy to implement client libraries in any language, since most of the work has already been done by
+redis client libraries.
+
+The fact that Beam is based on the Redis protocol also facilitates debugging and operations:
+you can always whip out the redis cli to inspect the state of the engine, or back it up to a
+slave database for later replay or retrieval.
+
 
 ### Inspecting a container
 

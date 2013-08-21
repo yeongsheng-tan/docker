@@ -94,6 +94,64 @@ Below is the typical sequence of running a job:
 
 ### Available jobs
 
+Below is a list of jobs available by default in the engine API. Job names are not case-sensitive.
+
+#### EXEC: execute a process
+
+Syntax: `exec CMD [ARG ...]`
+
+Environment:
+
+	* `restart`: if it exists and is different than "0", the process should be restarted when it exits or is killed.
+	* `workdir`: if it exists, sets the working directory in which the process is executed.
+	* `user`: if it exists, sets the uid under which the process is executed. As a convenience,
+if the value is not an integer, `/etc/passwd` is looked up in the container to determine the uid. Default=root.
+
+Additionally, all job environment variables are passed to the process as an overlay on its default
+environment (see [environment variables] under [execution environment]).
+
+
+#### IMPORT: set the root filesystem to the contents of an archive
+
+Syntax: `import -|URL`
+
+`import` unpacks the contents of a tar archive into the root filesystem, erasing all previous
+content.
+
+If its first argument is `-`, it reads the contents of the archive from stdin. Otherwise it
+downloads it from the specified URL.
+
+The archive may be compressed with the following formats: identity (uncompressed), gzip, bzip2 or xz.
+
+
+#### RUN: execute all startup processes
+
+Syntax: `start`
+
+`start` looks up the list of startup processes defined in the containers configuration, executes
+each of them in a concurrent `exec` job, and waits for them to exit before exiting.
+
+If another `start` is already running in the same container, the second call will fail.
+
+
+#### BUILD: execute the container''s build script
+
+Syntax `build`
+
+`build` looks for a build script and executes it. The goal of a build script is to transform a
+non-runnable container (typically a source code repository) into its runnable form (typically
+a compiled binary and its run dependencies).
+
+The build sequence is the following:
+
+* Look for `Dockerfile` at the root of the container. If it doesn''t exist, abort the build.
+
+* If the executable bit is set for `Dockerfile`, execute it with `exec /Dockerfile`. Otherwise
+execute it as a shell script with `exec sh /Dockerfile`. This will work because of the binaries
+guaranteed to be made available by the engine in every container (see [available binaries] in
+[execution environment]).
+
+
 
 ### Navigating containers
 

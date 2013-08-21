@@ -206,6 +206,13 @@ host filesystem. Multiple engines can run in parallel, as long as they each have
 
 ### Environment variables
 
+### Available binaries
+
+### Built-in shell
+
+
+### Access to the engine API
+
 
 
 ## Packaging and distribution

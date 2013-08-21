@@ -106,9 +106,20 @@ Below is the typical sequence of running a job:
 
 ### Cross-platform support
 
+The Docker engine can run on all major operating systems, including Linux, Windows, OSX and Solaris, and all
+major hardware platforms, including x86, x86_64 and arm.
+
+The core functionalities of the engine are the same across all operating systems and hardware platforms.
+Because of its modular architecture, many high-level features of Docker are available as plugins.
+Some of these plugins, like registry support or the http api, are portable and available on all platforms.
+Others, like lxc and aufs support, are system-specific by nature and are only available on certain platforms.
 
 
 ### Runtime dependencies
+
+The Docker engine is shipped as a static binary and doesn''t execute any external programs. In other words,
+it has no runtime dependencies other than the kernel and harware it was built for.
+
 
 
 ### Plugins

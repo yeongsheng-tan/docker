@@ -70,7 +70,7 @@ for inspection by your program. The following data is available for inspection:
 Your program can query this data using standard redis commands. It can also watch for changes using the
 synchronization features of Beam (see [The Beam protocol]).
 
-Access to inspection data is read-only. All redis commands susceptible to change the data will fail.
+Access to inspection data is read-only. All redis commands attemptingit to change the data will fail.
 
 
 ### Running jobs
@@ -183,7 +183,7 @@ it has no runtime dependencies other than the kernel and harware it was built fo
 ## Plugins
 
 Many of the features which made Docker popular - process isolation with lxc, copy-on-write with aufs,
-port allocation with iptables, etc. - are not implemented in the engine itslef, but in external plugins.
+port allocation with iptables, etc. - are not implemented in the engine itself, but in external plugins.
 
 This makes the engine less useful on its own - but also much more portable and customizable.
 

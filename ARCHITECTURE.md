@@ -70,7 +70,7 @@ for inspection by your program. The following data is available for inspection:
 Your program can query this data using standard redis commands. It can also watch for changes using the
 synchronization features of Beam (see [The Beam protocol]).
 
-Access to inspection data is read-only. All redis commands attemptingit to change the data will fail.
+Access to inspection data is read-only. All redis commands susceptible to change the data will fail.
 
 
 ### Running jobs

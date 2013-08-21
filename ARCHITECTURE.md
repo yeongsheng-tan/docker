@@ -122,7 +122,18 @@ it has no runtime dependencies other than the kernel and harware it was built fo
 
 
 
-### Plugins
+## Plugins
+
+Many of the features which made Docker popular - process isolation with lxc, copy-on-write with aufs,
+port allocation with iptables, etc. - are not implemented in the engine itslef, but in external plugins.
+
+This makes the engine less useful on its own - but also much more portable and customizable.
+
+The engine can download and install plugins dynamically without requiring a restart. It''s also possible 
+to bundle a selection of plugins along with the engine and ship them together as a single "distribution".
+
+Plugins are distributed and installed exactly like regular containers. In fact they *are* regular containers.
+
 
 
 

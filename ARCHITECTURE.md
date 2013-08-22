@@ -256,8 +256,14 @@ may traverse and read it, but must not modify it or its contents.
 ### Built-in shell
 
 
-### Access to the engine API
+### Runtime introspection
 
+A program may dynamically introspect various properties of its runtime environment by accessing the
+engine API. See [Engine API].
+
+Typical examples of introspection include looking up the address of remote services (see [Service discovery]),
+determining the version of the docker runtime (see [engine information]), creating and manipulating
+other containers (see [children]).
 
 
 ## Packaging and distribution

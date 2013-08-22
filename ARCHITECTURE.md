@@ -127,12 +127,12 @@ The archive may be compressed with the following formats: identity (uncompressed
 
 #### RUN: execute all startup processes
 
-Syntax: `start`
+Syntax: `run [ARG...]`
 
-`start` looks up the list of startup processes defined in the containers configuration, executes
-each of them in a concurrent `exec` job, and waits for them to exit before exiting.
+`run` executes the container''s entry point. Think of it as "double-clicking" on a container to make
+it do something. See [Run entrypoint].
 
-If another `start` is already running in the same container, the second call will fail.
+If another `run` is already running in the same container, the job is aborted.
 
 
 #### BUILD: execute the container''s build script

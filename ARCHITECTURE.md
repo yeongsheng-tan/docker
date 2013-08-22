@@ -153,6 +153,23 @@ guaranteed to be made available by the engine in every container (see [available
 [execution environment]).
 
 
+The build system in 1.0 supports all versions of the Dockerfile syntax, all the way back to
+version 0.4 when the `build` command was first introduced.
+
+
+#### SET: change container metadata
+
+
+#### WIRE: make the ports of the current container accessible to another
+
+Syntax: `wire consumer [consumer...]`
+
+
+
+#### EXPOSE: advertise that a container is listening on a network port
+
+Syntax: `expose portspec`
+
 
 ### Navigating containers
 

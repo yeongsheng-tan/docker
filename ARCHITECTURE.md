@@ -104,6 +104,7 @@ Environment:
 
 	* `restart`: if it exists and is different than "0", the process should be restarted when it exits or is killed.
 	* `workdir`: if it exists, sets the working directory in which the process is executed.
+	* `timeout`: if this is set, the engine will wait the specified number of seconds, then terminate the process.
 	* `user`: if it exists, sets the uid under which the process is executed. As a convenience,
 if the value is not an integer, `/etc/passwd` is looked up in the container to determine the uid. Default=root.
 

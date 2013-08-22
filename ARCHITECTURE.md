@@ -222,7 +222,34 @@ host filesystem. Multiple engines can run in parallel, as long as they each have
 
 ## Execution environment
 
+This section describes the environment available to processes executed inside a container
+by an `exec` job (see [EXEC] in [Available jobs]).
+
+When writing a program which will run inside a docker container, you can rely on this environment
+always being available.
+
+
 ### Environment variables
+
+The following environment variables are always set by default:
+
+```
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+HOME=/
+```
+
+These defaults may be overriden by the container configuration (See [container configuration]
+in [container format]), or in the job environment (see [running jobs] in [the engine api]).
+
+
+### Filesystem alterations
+
+An `exec` job never modifies the container''s filesystem, with 2 exceptions:
+
+* The unix socket `/.engine.sock` is crested for introspection (see [runtime introspection] below)
+* The directory `/.docker` is created and reserved for the use of the docker engine. Processes
+may traverse and read it, but must not modify it or its contents.
+
 
 ### Available binaries
 

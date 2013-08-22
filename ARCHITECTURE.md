@@ -201,7 +201,7 @@ it has no runtime dependencies other than the kernel and harware it was built fo
 ## Plugins
 
 Many of the features which made Docker popular - process isolation with lxc, copy-on-write with aufs,
-port allocation with iptables, etc. - are not implemented in the engine itslef, but in external plugins.
+port allocation with iptables, etc. - are not implemented in the engine itself, but in external plugins.
 
 This makes the engine less useful on its own - but also much more portable and customizable.
 

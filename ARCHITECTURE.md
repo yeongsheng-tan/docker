@@ -342,7 +342,28 @@ all subsequent commands until the next FROM (see [NEW] and [INSTALL] in [Availab
 
 * `RUN <cmd> [arg...]`: execute a process in the target container and wait for it to complete.
 
-## Container format
+* `EXPOSE <por>t`: modify the configuration of the target container to expose the given port at runtime.
+
+* `ENV <key> <value>`: set the default value of the environment variable `key` to `value` in the configuration
+of the target container.
+
+* `USER <uid>|<username>`: set the default user of the startup processes in the configuration
+of the target container.
+
+* `WORKDIR <path>`: set the default working directory of the startup processes in the configuration
+of the target container.
+
+* `VOLUME <path>`: add `path` to the list of directories to persist in the configuration of the target
+container.
+
+* `ENTRYPOINT`: 
+
+* `CMD`: 
+
+Commands are executed in sequence, line-by-line. Multi-line commands are not supported.
+
+
+#### Advanced Dockerfile syntax
 
 ### Configuration
 

@@ -2,6 +2,23 @@
 
 ## Introduction
 
+This document gives an overview of the planned architecture of Docker 1.0. It is meant to help
+contributors, power users, and developers of companion projects to prepare for the 1.0 release.
+
+This architecture will be put in place gradually, over the course of several releases. It requires
+major changes to the internals of the engine, and inevitably some of these changes will require
+adjustments in the user experience. But the goal is to minimize the number and magnitude of breaking
+changes. In particular the remote HTTP api, registry API and overall command-line usage flow should
+be preserved with zero or almost zero changes.
+
+This double goal - aggressive internal change and minimal breaking external changes - is
+difficult to get right, and carries risks: the risk of stalling development, of alienating users
+with too many unnecessary changes, of discouraging developers with reckless API breakage. But that
+risk is necessary if we want Docker to live up to the expectations of its community.
+
+So let''s keep the difficulty in mind, focus on the user, and do the best engineering job we can :)
+
+
 
 ## Engine API
 

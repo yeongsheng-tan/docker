@@ -283,6 +283,21 @@ determining the version of the docker runtime (see [engine information]), creati
 other containers (see [children]).
 
 
+## Container format on disk
+
+A docker container is a directory managed by the Docker engine. The contents of that directory are
+referred to as the container''s *filesystem*. The engine uses the filesystem as a sandboxed environment
+to execute *jobs* (see [Running jobs]). There are no mandatory requirements for a container''s
+filesystem - even an empty directory qualifies as a container.
+
+Optionally, special configuration can be added to a container''s filesystem to communicate requirements
+to the engine (See [Run entrypoint).
+
+A container''s filesystem represents the entirety of its content: there is no need for a separate configuration
+file, manifest or other companion data. It''s all there. This means that copying a container''s filesystem
+is equivalent to duplicating a container.
+
+
 ## Packaging and distribution
 
 

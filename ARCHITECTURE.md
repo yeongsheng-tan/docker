@@ -371,3 +371,52 @@ Commands are executed in sequence, line-by-line. Multi-line commands are not sup
 ### History
 
 
+
+## Concepts
+
+This section explains various concepts which guide the design of Docker, with a particular emphasis
+on new concepts introduced between 0.6 and 1.0.
+
+
+### Source repositories are containers too!
+
+If you are used to the 0.5 architecture, you are used using Dockerfile for *building containers*.
+What is this nonsense about also using them as a *run* entrypoint for containers?
+
+Well, that is because a *build* is simply what happens when you *run* a directory full of source
+code.
+
+A docker container can be defined as "any directory the docker engine can run". Technically, even an
+empty directory is a valid docker container! And source directories - freshly checked out of your
+git repository - are containers too!
+
+Why is that cool? Well, running a container is analogous to a double-click: it makes the selected
+object "do something", whatever that is. If you double-click an app, it runs. If you double-click
+an installer, it installs its contents onto the system. And if you double-clicked a source code
+repository... wouldn''t it be cool if it just built itself? Well, now it can!
+
+
+
+### Containers are nested
+
+
+Containers can contain other containers, and so on recursively with no limit of depth.
+
+This makes it much easier to reason about several use cases, including *orchestration* (a stack
+of containers is represented by a parent container), *build environments* (a container with all
+the build dependencies can assemble a child container with only the runtime bits), *multi-tenancy*
+(3 different users get 3 different remote api endpoints in 3 different containers to manage
+3 different fleets of children containers), and so on.
+
+Nesting also makes the engine code smaller and more generic. Since a container is just a directory
+which the docker engine can run, the root context in which the docker engine runs
+(usually /var/lib/docker) is itself a container. "All the containers" is another way to say
+"all the children containers of the root container" - and the same code can implement both.
+
+
+## Open questions
+
+
+* How do we accomodate future extensions of the container configuration? (freeze/restore,
+auto
+

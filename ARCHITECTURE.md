@@ -302,6 +302,45 @@ is equivalent to duplicating a container.
 
 
 
+### Run entrypoint 
+
+A container may carry on its filesystem a `Dockerfile`, which makes the container "runnable" by
+defining an entry point for the `RUN` command (See [RUN]). The Dockerfile is also used
+by the `BUILD` command, which is a special case of RUN (see [BUILD]).
+
+A Dockerfile can be written using 2 different syntaxes: simplified and advanced. The two syntaxes
+are interchangeable, and can even be mixed in the same Dockerfile.
+
+
+#### Simplified Dockerfile syntax
+
+The simplified syntax is a minimal DSL introduced in version 0.4 to facilitate the use of
+Dockerfiles for *building* new containers from source. For this reason the simplified syntax
+is mostly used by Dockerfiles shipped with source code, as a "Makefile on steroids".
+
+Don''t worry, you can also use the simplified syntax as an entrypoint for fully built containers.
+If the notion of using a Dockerfile for something other than building confuses you, please refer
+to [Source repositories are containers too!] in [Concepts].
+
+The simplified syntax is a stripped down "pseudo-shell" syntax:
+
+* The file is scanned line by line.
+* Leading whitespaces are ignored.
+* Lines made of whitespaces or starting with '#' are skipped.
+* The remaining lines are split in 2 parts, using the first whitespace as a separator. The left
+part is used as the command name, the right part as the argument.
+* Commands are executed in sequence.
+* If a command fails, the execution of the Dockerfile is aborted.
+
+Below is a list of available commands. Command names are not case-sensitive.
+
+* `FROM <pkg>`: create a new container, install the package `pkg` in it, and use it as the target for
+all subsequent commands until the next FROM (see [NEW] and [INSTALL] in [Available jobs]).
+
+* `MAINTAINER [name] <email>`: set the maintainer field in the target container''s metadata
+(see [SET] in [Available jobs]).
+
+* `RUN <cmd> [arg...]`: execute a process in the target container and wait for it to complete.
 
 ## Container format
 

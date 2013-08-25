@@ -32,7 +32,11 @@ func main() {
 
 func runJob(eng *engine.Engine, name string, args ...string) error {
 	pipes := engine.NewPipeHub()
-	go eng.Serve(pipes)
+	go func() {
+		if err := eng.Serve(pipes); err != nil {
+			log.Fatal("Error running engine: %s", err)
+		}
+	}()
 	client, err := beam.NewClient(pipes)
 	if err != nil {
 		return fmt.Errorf("Couldn't initialize beam client: %s", err)

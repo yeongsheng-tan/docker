@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"fmt"
 	"net"
+	"sync"
 )
 
 type Engine struct {
@@ -104,6 +105,25 @@ func (eng *Engine) ListenAndServe() error {
 	return eng.Serve(l)
 }
 
-func (eng *Engine) Serve(l net.Listener) error {
-	return Proxy(l, eng.redisTransport)
+func (eng *Engine) Serve(l net.Listener) (err error) {
+	// FIXME: cleanup both goroutines if either one fails.
+	var wg sync.WaitGroup
+	go func() {
+		wg.Add(1)
+		e := eng.Work()
+		if e != nil && err == nil {
+			err = e
+		}
+		wg.Add(-1)
+	}()
+	go func() {
+		wg.Add(1)
+		e := Proxy(l, eng.redisTransport)
+		if e != nil && err == nil {
+			err = e
+		}
+		wg.Add(-1)
+	}()
+	wg.Wait()
+	return
 }

@@ -25,16 +25,16 @@ So let''s keep the difficulty in mind, focus on the user, and do the best engine
 The engine API is the canonical way to interact with the Docker engine programatically. All interactions with the engine
 happen through the engine API, directly or indirectly. This includes:
 
-	* Command-line operation of the engine
-	* Remote access to the engine via the http remote api
-	* Introspection from inside a container
+* Command-line operation of the engine
+* Remote access to the engine via the http remote api
+* Introspection from inside a container
 
 The engine API is designed to natively support a few important things:
 
-	* Isolation and multi-tenancy
-	* Easy crud operations on structured data
-	* Unix-style process execution, including sending and receiving any number of binary streams in parallel
-	* Easy watching of value changes
+* Isolation and multi-tenancy
+* Easy crud operations on structured data
+* Unix-style process execution, including sending and receiving any number of binary streams in parallel
+* Easy watching of value changes
 
 
 ### Connecting to the engine
@@ -76,13 +76,13 @@ slave database for later replay or retrieval.
 The first function of the engine API is to expose interesting data relative to a container
 for inspection by your program. The following data is available for inspection:
 
-	* Engine information: version, uptime, 
-	* Container metadata: author, version, package name, creation date, signature.
-	* Container configuration: startup processes, ports to expose, directories to persist, default environment, version of docker required.
-	* Container history: a complete record of all the operations which led from an empty directory to the current state of the container.
-	* Services: the network addresses of remote services accessible from the container.
-	* User data: a reserved space for application-specific data.
-	* Children: a list of containers nested inside the current container.
+* Engine information: version, uptime, 
+* Container metadata: author, version, package name, creation date, signature.
+* Container configuration: startup processes, ports to expose, directories to persist, default environment, version of docker required.
+* Container history: a complete record of all the operations which led from an empty directory to the current state of the container.
+* Services: the network addresses of remote services accessible from the container.
+* User data: a reserved space for application-specific data.
+* Children: a list of containers nested inside the current container.
 
 Your program can query this data using standard redis commands. It can also watch for changes using the
 synchronization features of Beam (see [The Beam protocol]).
@@ -103,10 +103,10 @@ to execute jobs. It can then communication with the jobs through binary streams,
 
 Below is the typical sequence of running a job:
 
-	* Create new job entry with name (eg. "exec"), arguments (eg. "echo", "hello", "world") and environment (eg. DEBUG=1 HOME=/home/foo)
-	* Start new job
-	* Read data from output streams (stdout, stderr...) and write data to input streams (stdin...)
-	* Wait for job to complete or run more jobs in parallel
+* Create new job entry with name (eg. "exec"), arguments (eg. "echo", "hello", "world") and environment (eg. DEBUG=1 HOME=/home/foo)
+* Start new job
+* Read data from output streams (stdout, stderr...) and write data to input streams (stdin...)
+* Wait for job to complete or run more jobs in parallel
 
 
 ### Available jobs
@@ -119,10 +119,11 @@ Syntax: `exec CMD [ARG ...]`
 
 Environment:
 
-	* `restart`: if it exists and is different than "0", the process should be restarted when it exits or is killed.
-	* `workdir`: if it exists, sets the working directory in which the process is executed.
-	* `timeout`: if this is set, the engine will wait the specified number of seconds, then terminate the process.
-	* `user`: if it exists, sets the uid under which the process is executed. As a convenience,
+* `restart`: if it exists and is different than "0", the process should be restarted when it exits or is killed.
+* `workdir`: if it exists, sets the working directory in which the process is executed.
+* `timeout`: if this is set, the engine will wait the specified number of seconds, then terminate the process.
+* `user`: if it exists, sets the uid under which the process is executed. As a convenience,
+
 if the value is not an integer, `/etc/passwd` is looked up in the container to determine the uid. Default=root.
 
 Additionally, all job environment variables are passed to the process as an overlay on its default

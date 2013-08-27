@@ -433,7 +433,7 @@ which the docker engine can run, the root context in which the docker engine run
 
 ## Open questions
 
+* How do we accomodate future extensions of the container configuration? (freeze/restore)
 
-* How do we accomodate future extensions of the container configuration? (freeze/restore,
-auto
-
+* If a container''s configuration is simply an entrypoint script, that means a) it can''t be statically analyzed,
+and b) a build script might need to generate an entrypoint script instead of a structured format like json. Is that ok?

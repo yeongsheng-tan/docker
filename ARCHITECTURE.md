@@ -188,9 +188,26 @@ Syntax: `wire consumer [consumer...]`
 Syntax: `expose portspec`
 
 
-### Navigating containers
+#### NEW: create a new child container
+
+Syntax: `new`
+
+Output: a single line with the ID of the new container. That ID can be used to interact with the
+container via the engine API. See [Interacting with other containers].
 
 
+#### NAME: give a memorable name to a container
+
+Syntax: `name <id> <name>`
+
+`NAME` makes the container <id> available under the given <name>. A container can have multiple names.
+Names, just like IDs, are relative to the scope of the parent container, so the same name can
+be used multiple times in different parent containers.
+
+
+
+
+### Interacting with children containers
 
 
 

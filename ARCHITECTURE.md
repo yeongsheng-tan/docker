@@ -22,7 +22,18 @@ So let''s keep the difficulty in mind, focus on the user, and do the best engine
 
 ## Common patterns
 
-### Dependency injection
+### Inter-container communication
+
+Most applications are made of more than one component: application server, database, etc.
+A common pattern is to deploy each component in its own container, and use the [LINK](#"Link") feature
+to make containers visible to each other (eg. make the database visible to the application server, etc.).
+
+Applications can then use [service discovery](#"Service discovery") to lookup the address of services
+as they need to connect to them. Since the engine API is based on redis, it is pretty easy to make the
+required calls using a regular redis client. For even more convenience a docker-specific wrapper library
+can be used.
+
+
 
 ### Airtight testing
 

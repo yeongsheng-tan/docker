@@ -110,6 +110,47 @@ synchronization features of Beam (see [The Beam protocol]).
 Access to inspection data is read-only. All redis commands susceptible to change the data will fail.
 
 
+#### Service discovery: looking up a container''s exposed ports
+
+A common reason for inspecting a container is to discover its network ports and lookup the address
+at which they are exposed.
+
+A container''s ports are listed as a hash in the container database. They can be manipulated with
+the following commands:
+
+```
+# List all ports
+HKEYS /ports
+--> 80/tcp 443/tcp 5432/tcp
+
+# Wait for the port to exist
+# Note: SYNC_UNTIL is not a redis command, but a beam command on top of redis SYNC
+SYNC_UNTIL "HGET /ports 80/tcp != null"
+# Lookup the address of a particular port
+HGET /ports 80/tcp
+--> tcp://192.168.42.42:8080
+```
+
+Note: when an application looks up a port in this fashion, it''s important that the lookup blocks
+*until the port exists*. This greatly facilitates multi-container orchestration, by eliminating the
+need for the user (or a helper tool) to carefully analyze inter-container dependency, start
+containers in the right order, wait for each port to be available before starting the next, etc.
+Thanks to blocking lookup, containers can be started in any random order, and dependencies will
+resolve themselves automatically as ports are exposed.
+
+Also note the format of the port idenfitier: the port number followed by the mandatory protocol suffix
+in lowercase.
+
+Like all other values in the container database, access to the ports is read-onnly. To expose a new
+port in a container, see [EXPOSE].
+
+
+
+#### Watching for changes
+
+
+
+
 ### Running jobs
 
 The second function of the engine API is to get the engine to do things on your program''s behalf.

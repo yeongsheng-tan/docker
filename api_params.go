@@ -50,6 +50,7 @@ type APIContainers struct {
 	Ports      string
 	SizeRw     int64
 	SizeRootFs int64
+	Links      []string
 }
 
 type APISearch struct {

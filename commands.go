@@ -17,7 +17,6 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"reflect"
 	"runtime"
 	"strconv"
@@ -30,7 +29,7 @@ import (
 
 var (
 	GITCOMMIT string
-	VERSION string
+	VERSION   string
 )
 
 func (cli *DockerCli) getMethod(name string) (reflect.Method, bool) {
@@ -1006,6 +1005,7 @@ func (cli *DockerCli) CmdPs(args ...string) error {
 	since := cmd.String("sinceId", "", "Show only containers created since Id, include non-running ones.")
 	before := cmd.String("beforeId", "", "Show only container created before Id, include non-running ones.")
 	last := cmd.Int("n", -1, "Show n last created containers, include non-running ones.")
+	links := cmd.Bool("links", false, "Show linked containers")
 
 	if err := cmd.Parse(args); err != nil {
 		return nil
@@ -1029,6 +1029,9 @@ func (cli *DockerCli) CmdPs(args ...string) error {
 	if *size {
 		v.Set("size", "1")
 	}
+	if *links {
+		v.Set("links", "1")
+	}
 
 	body, _, err := cli.call("GET", "/containers/json?"+v.Encode(), nil)
 	if err != nil {
@@ -1044,10 +1047,12 @@ func (cli *DockerCli) CmdPs(args ...string) error {
 	if !*quiet {
 		fmt.Fprint(w, "ID\tIMAGE\tCOMMAND\tCREATED\tSTATUS\tPORTS")
 		if *size {
-			fmt.Fprintln(w, "\tSIZE")
-		} else {
-			fmt.Fprint(w, "\n")
+			fmt.Fprint(w, "\tSIZE")
 		}
+		if *links {
+			fmt.Fprint(w, "\tLINKS")
+		}
+		fmt.Fprint(w, "\n")
 	}
 
 	for _, out := range outs {
@@ -1059,13 +1064,21 @@ func (cli *DockerCli) CmdPs(args ...string) error {
 			}
 			if *size {
 				if out.SizeRootFs > 0 {
-					fmt.Fprintf(w, "%s (virtual %s)\n", utils.HumanSize(out.SizeRw), utils.HumanSize(out.SizeRootFs))
+					fmt.Fprintf(w, "%s (virtual %s)\t", utils.HumanSize(out.SizeRw), utils.HumanSize(out.SizeRootFs))
 				} else {
-					fmt.Fprintf(w, "%s\n", utils.HumanSize(out.SizeRw))
+					fmt.Fprintf(w, "%s\t", utils.HumanSize(out.SizeRw))
 				}
-			} else {
-				fmt.Fprint(w, "\n")
 			}
+			if *links {
+				for _, elem := range out.Links {
+					fmt.Fprintf(w, "%s, ", elem)
+				}
+				if len(out.Links) > 0 {
+					fmt.Fprintf(w, "\b\b")
+				}
+				fmt.Fprintf(w, "\t")
+			}
+			fmt.Fprint(w, "\b\n")
 		} else {
 			if *noTrunc {
 				fmt.Fprintln(w, out.ID)
@@ -1289,79 +1302,6 @@ func (cli *DockerCli) CmdSearch(args ...string) error {
 		fmt.Fprintf(w, "%s\t%s\n", out.Name, desc)
 	}
 	w.Flush()
-	return nil
-}
-
-// Ports type - Used to parse multiple -p flags
-type ports []int
-
-// ListOpts type
-type ListOpts []string
-
-func (opts *ListOpts) String() string {
-	return fmt.Sprint(*opts)
-}
-
-func (opts *ListOpts) Set(value string) error {
-	*opts = append(*opts, value)
-	return nil
-}
-
-// AttachOpts stores arguments to 'docker run -a', eg. which streams to attach to
-type AttachOpts map[string]bool
-
-func NewAttachOpts() AttachOpts {
-	return make(AttachOpts)
-}
-
-func (opts AttachOpts) String() string {
-	// Cast to underlying map type to avoid infinite recursion
-	return fmt.Sprintf("%v", map[string]bool(opts))
-}
-
-func (opts AttachOpts) Set(val string) error {
-	if val != "stdin" && val != "stdout" && val != "stderr" {
-		return fmt.Errorf("Unsupported stream name: %s", val)
-	}
-	opts[val] = true
-	return nil
-}
-
-func (opts AttachOpts) Get(val string) bool {
-	if res, exists := opts[val]; exists {
-		return res
-	}
-	return false
-}
-
-// PathOpts stores a unique set of absolute paths
-type PathOpts map[string]struct{}
-
-func NewPathOpts() PathOpts {
-	return make(PathOpts)
-}
-
-func (opts PathOpts) String() string {
-	return fmt.Sprintf("%v", map[string]struct{}(opts))
-}
-
-func (opts PathOpts) Set(val string) error {
-	var containerPath string
-
-	splited := strings.SplitN(val, ":", 2)
-	if len(splited) == 1 {
-		containerPath = splited[0]
-		val = filepath.Clean(splited[0])
-	} else {
-		containerPath = splited[1]
-		val = fmt.Sprintf("%s:%s", splited[0], filepath.Clean(splited[1]))
-	}
-
-	if !filepath.IsAbs(containerPath) {
-		utils.Debugf("%s is not an absolute path", containerPath)
-		return fmt.Errorf("%s is not an absolute path", containerPath)
-	}
-	opts[val] = struct{}{}
 	return nil
 }
 

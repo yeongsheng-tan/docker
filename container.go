@@ -11,6 +11,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"os"
 	"os/exec"
 	"path"
@@ -20,7 +21,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-	"net"
 )
 
 type Container struct {
@@ -82,6 +82,7 @@ type Config struct {
 	Entrypoint      []string
 	NetworkDisabled bool
 	Privileged      bool
+	Links           []string
 }
 
 type HostConfig struct {
@@ -137,6 +138,9 @@ func ParseRun(args []string, capabilities *Capabilities) (*Config, *HostConfig, 
 
 	var flEnv ListOpts
 	cmd.Var(&flEnv, "e", "Set environment variables")
+
+	var flLinks ListOpts
+	cmd.Var(&flLinks, "link", "Link container to an other")
 
 	var flDns ListOpts
 	cmd.Var(&flDns, "dns", "Set custom dns servers")
@@ -224,6 +228,7 @@ func ParseRun(args []string, capabilities *Capabilities) (*Config, *HostConfig, 
 		Entrypoint:      entrypoint,
 		Privileged:      *flPrivileged,
 		WorkingDir:      *flWorkingDir,
+		Links:           flLinks,
 	}
 	hostConfig := &HostConfig{
 		Binds:           binds,
@@ -716,6 +721,35 @@ func (container *Container) Start(hostConfig *HostConfig) error {
 		params = append(params, "-e", elem)
 	}
 
+	for _, elem := range container.Config.Links {
+		tmp := strings.SplitN(elem, "=", 2)
+		if len(tmp) != 2 {
+			utils.Debugf("Wrong format for Link: %s\n", elem)
+			continue
+		}
+		serviceName := tmp[0]
+		containerID := tmp[1]
+
+		c := container.runtime.Get(containerID)
+		if c == nil {
+			return fmt.Errorf("Container %s (%s) not found.", containerID, serviceName)
+		}
+
+		// FIXME: Auto start linked containers?
+		if c.State.Running == false {
+			return fmt.Errorf("Linked container %s (%s) does not run.", containerID, serviceName)
+		}
+
+		json, err := json.Marshal(struct {
+			Network map[string]PortMapping `json: "omitempty,"`
+			Env     []string               `json: "omitempty,"`
+		}{Network: c.NetworkSettings.PortMapping, Env: c.Config.Env})
+		if err != nil {
+			return fmt.Errorf("Error while marshalling config for %s (%s): %s", containerID, serviceName, err)
+		}
+		params = append(params, "-e", serviceName+"="+string(json))
+	}
+
 	// Program
 	params = append(params, "--", container.Path)
 	params = append(params, container.Args...)
@@ -813,10 +847,10 @@ func (container *Container) allocateNetwork() error {
 			iface = &NetworkInterface{disabled: true}
 		} else {
 			iface = &NetworkInterface{
-				IPNet: net.IPNet{IP: net.ParseIP(container.NetworkSettings.IPAddress), Mask: manager.bridgeNetwork.Mask},
+				IPNet:   net.IPNet{IP: net.ParseIP(container.NetworkSettings.IPAddress), Mask: manager.bridgeNetwork.Mask},
 				Gateway: manager.bridgeNetwork.IP,
 				manager: manager,
-				}
+			}
 			ipNum := ipToInt(iface.IPNet.IP)
 			manager.ipAllocator.inUse[ipNum] = struct{}{}
 		}
@@ -827,10 +861,10 @@ func (container *Container) allocateNetwork() error {
 		portSpecs = container.Config.PortSpecs
 	} else {
 		for backend, frontend := range container.NetworkSettings.PortMapping["Tcp"] {
-			portSpecs = append(portSpecs, fmt.Sprintf("%s:%s/tcp",frontend, backend))
+			portSpecs = append(portSpecs, fmt.Sprintf("%s:%s/tcp", frontend, backend))
 		}
 		for backend, frontend := range container.NetworkSettings.PortMapping["Udp"] {
-			portSpecs = append(portSpecs, fmt.Sprintf("%s:%s/udp",frontend, backend))
+			portSpecs = append(portSpecs, fmt.Sprintf("%s:%s/udp", frontend, backend))
 		}
 	}
 

@@ -193,7 +193,17 @@ your web application container makes it part of the appliation "stack".
 
 #### EXPOSE: advertise that a container is listening on a network port
 
-Syntax: `expose portspec`
+Syntax: `expose <private_port>`
+
+`expose` makes a network port in the target container available for discovery by other containers.
+
+When `expose PORT` returns for target container `foo`, the following are guaranteed to be true:
+
+* All containers capable of inspecting `foo`, including itself, can lookup an ip+port address 
+under the key *PORT*. (See [Inspecting a container] and [LINK]).
+
+* That address is reachable from the container which looked it up, and connecting to it yields
+a valid network connection (tcp or udp) to the process listening on 0.0.0.0:PORT inside `c`.
 
 
 #### NEW: create a new child container

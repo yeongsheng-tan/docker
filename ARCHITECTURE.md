@@ -20,6 +20,26 @@ So let''s keep the difficulty in mind, focus on the user, and do the best engine
 
 
 
+## Common patterns
+
+### Dependency injection
+
+### Airtight testing
+
+### Managing credentials
+
+### Multi-container stacks
+
+### Multi-host clusters
+
+### Upgrades
+
+### Docker on the development machine
+
+### Multi-tenant access to docker
+
+
+
 ## Engine API
 
 The engine API is the canonical way to interact with the Docker engine programatically. All interactions with the engine

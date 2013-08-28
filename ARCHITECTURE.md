@@ -274,6 +274,19 @@ to "crop" the new container to a subset of the source. Defaults to */*.
 
 ### Interacting with children containers
 
+A container may have children containers (see [Containers are nested]). The Engine API can be used to
+recursively inspect any child container, run jobs inside it, etc.
+
+Below is the typical sequence of interacting with a child container:
+
+* If necessary, list children by inspecting the target container (See [inspecting a container]).
+
+* Once a child is chosen, change the context to that container by with the redis command "SELECT <id>",
+where *<id>* is the child identifier.
+
+# All Engine API functions are now available, with the child container as the new context.
+
+
 
 
 ## Docker on the host

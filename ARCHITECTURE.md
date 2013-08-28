@@ -206,6 +206,19 @@ under the key *PORT*. (See [Inspecting a container] and [LINK]).
 a valid network connection (tcp or udp) to the process listening on 0.0.0.0:PORT inside `c`.
 
 
+Environment:
+
+* `backlog`: as a convenience, the first `N` connections (where *N* is the value of this variable)
+to the exposed port are guaranteed to succeed, even if no process is listening on the backend port.
+Reading and writing to the connection will block until the backend port is available, at which time
+the connection will resume as normal. Once the backlog is full, new connections will fail. Established
+connections do not time out: the connection remains open as long as the client doesn''t interrupt it.
+Defaults to to *N=1024*. This feature greatly facilitates orchestration: client containers can simply
+connect as soon as a port is available for lookup, without having to implement timeout/retry
+logic in every single application. (See [Multi-container stacks]).
+
+
+
 #### NEW: create a new child container
 
 Syntax: `new`

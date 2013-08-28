@@ -178,10 +178,17 @@ version 0.4 when the `build` command was first introduced.
 #### SET: change container metadata
 
 
-#### WIRE: make the ports of the current container accessible to another
+#### LINK: create a reference to a container inside another container
 
-Syntax: `wire consumer [consumer...]`
+Syntax: `link target parent`
 
+For example, `link db webapp` will make the container `db` accessible to `webapp` as a child
+container, similarly to a symbolic link on a filesystem. The reference is a container of its
+own, accessible by a unique ID and the name `db` within the scope of `webapp`.
+
+*LINK* is commonly used for "wiring" containers together (also known as service discovery):
+since a container can access the port information of its children, linking a database into
+your web application container makes it part of the appliation "stack".
 
 
 #### EXPOSE: advertise that a container is listening on a network port

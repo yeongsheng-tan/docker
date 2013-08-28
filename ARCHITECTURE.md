@@ -237,6 +237,20 @@ be used multiple times in different parent containers.
 
 
 
+#### CLONE: create a copy of a container
+
+Syntax: `clone [src] [path]`
+
+`CLONE` creates a new container by duplicating an existing one.
+
+Arguments:
+
+* `src`: the id or name of the container to use as the source. Defaults to *0* (self).
+
+* `path`: the path inside the source container to use as a root for the new container. This can be used
+to "crop" the new container to a subset of the source. Defaults to */*.
+
+
 
 ### Interacting with children containers
 

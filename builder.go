@@ -87,18 +87,18 @@ func (builder *Builder) Create(config *Config) (*Container, error) {
 		return nil, err
 	}
 
-	if len(config.Dns) == 0 && len(builder.runtime.Dns) == 0 && utils.CheckLocalDns(resolvConf) {
+	if len(config.Dns) == 0 && len(builder.runtime.config.Dns) == 0 && utils.CheckLocalDns(resolvConf) {
 		//"WARNING: Docker detected local DNS server on resolv.conf. Using default external servers: %v", defaultDns
-		builder.runtime.Dns = defaultDns
+		builder.runtime.config.Dns = defaultDns
 	}
 
 	// If custom dns exists, then create a resolv.conf for the container
-	if len(config.Dns) > 0 || len(builder.runtime.Dns) > 0 {
+	if len(config.Dns) > 0 || len(builder.runtime.config.Dns) > 0 {
 		var dns []string
 		if len(config.Dns) > 0 {
 			dns = config.Dns
 		} else {
-			dns = builder.runtime.Dns
+			dns = builder.runtime.config.Dns
 		}
 		container.ResolvConfPath = path.Join(container.root, "resolv.conf")
 		f, err := os.Create(container.ResolvConfPath)

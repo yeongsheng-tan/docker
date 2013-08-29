@@ -1035,7 +1035,8 @@ func TestOptionsRoute(t *testing.T) {
 	runtime := mkRuntime(t)
 	defer nuke(runtime)
 
-	srv := &Server{runtime: runtime, enableCors: true}
+	runtime.config.EnableCors = true
+	srv := &Server{runtime: runtime}
 
 	r := httptest.NewRecorder()
 	router, err := createRouter(srv, false)
@@ -1058,7 +1059,8 @@ func TestGetEnabledCors(t *testing.T) {
 	runtime := mkRuntime(t)
 	defer nuke(runtime)
 
-	srv := &Server{runtime: runtime, enableCors: true}
+	runtime.config.EnableCors = true
+	srv := &Server{runtime: runtime}
 
 	r := httptest.NewRecorder()
 

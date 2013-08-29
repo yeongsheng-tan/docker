@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/dotcloud/docker/utils"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -27,9 +28,25 @@ func setupWorkingDirectory(workdir string) {
 	if workdir == "" {
 		return
 	}
-    syscall.Chdir(workdir)
+	syscall.Chdir(workdir)
 }
 
+// Setup hostname
+func setupHostname(hostname, domainname string) {
+	if hostname == "" {
+		return
+	}
+	ioutil.WriteFile("/etc/hostname", []byte(hostname+"\n"), 0644)
+	content, err := ioutil.ReadFile("/etc/hosts")
+	if err != nil {
+		return
+	}
+	if domainname != "" {
+		ioutil.WriteFile("/etc/hosts", []byte("127.0.0.1\t"+hostname+"."+domainname+" "+hostname+"\n"+string(content)), 0644)
+	} else {
+		ioutil.WriteFile("/etc/hosts", []byte("127.0.0.1\t"+hostname+"\n"+string(content)), 0644)
+	}
+}
 
 // Takes care of dropping privileges to the desired user
 func changeUser(u string) {
@@ -93,7 +110,8 @@ func SysInit() {
 	var u = flag.String("u", "", "username or uid")
 	var gw = flag.String("g", "", "gateway address")
 	var workdir = flag.String("w", "", "workdir")
-
+	var hostname = flag.String("h", "", "hostname")
+	var domainname = flag.String("d", "", "domainname")
 	var flEnv ListOpts
 	flag.Var(&flEnv, "e", "Set environment variables")
 
@@ -102,6 +120,7 @@ func SysInit() {
 	cleanupEnv(flEnv)
 	setupNetworking(*gw)
 	setupWorkingDirectory(*workdir)
+	setupHostname(*hostname, *domainname)
 	changeUser(*u)
 	executeProgram(flag.Arg(0), flag.Args())
 }

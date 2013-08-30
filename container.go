@@ -108,7 +108,7 @@ type KeyValuePair struct {
 
 func ParseRun(args []string, capabilities *Capabilities) (*Config, *HostConfig, *flag.FlagSet, error) {
 	cmd := Subcmd("run", "[OPTIONS] IMAGE [COMMAND] [ARG...]", "Run a command in a new container")
-	if len(args) > 0 && args[0] != "--help" {
+	if os.Getenv("TEST") != "" {
 		cmd.SetOutput(ioutil.Discard)
 		cmd.Usage = nil
 	}

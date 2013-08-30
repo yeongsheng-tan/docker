@@ -38,13 +38,13 @@ func setupHostname(hostname, domainname string) {
 	}
 	ioutil.WriteFile("/etc/hostname", []byte(hostname+"\n"), 0644)
 	content, err := ioutil.ReadFile("/etc/hosts")
-	if err != nil {
+	if err != nil && !os.IsNotExist(err) {
 		return
 	}
 	if domainname != "" {
-		ioutil.WriteFile("/etc/hosts", []byte("127.0.0.1\t"+hostname+"."+domainname+" "+hostname+"\n"+string(content)), 0644)
+		ioutil.WriteFile("/etc/hosts", []byte("127.0.0.1\t"+hostname+"."+domainname+" "+hostname+"\n::1\t\t"+hostname+"."+domainname+" "+hostname+"\n"+string(content)), 0644)
 	} else {
-		ioutil.WriteFile("/etc/hosts", []byte("127.0.0.1\t"+hostname+"\n"+string(content)), 0644)
+		ioutil.WriteFile("/etc/hosts", []byte("127.0.0.1\t"+hostname+"\n::1\t\t"+hostname+"\n"+string(content)), 0644)
 	}
 }
 

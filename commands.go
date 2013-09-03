@@ -2,6 +2,7 @@ package docker
 
 import (
 	"archive/tar"
+	"bufio"
 	"bytes"
 	"code.google.com/p/getopt"
 	"encoding/json"
@@ -25,7 +26,6 @@ import (
 	"syscall"
 	"text/tabwriter"
 	"time"
-	"unicode"
 )
 
 var (
@@ -91,7 +91,6 @@ func (cli *DockerCli) CmdHelp(args ...string) error {
 		{"login", "Register or Login to the docker registry server"},
 		{"logs", "Fetch the logs of a container"},
 		{"port", "Lookup the public-facing port which is NAT-ed to PRIVATE_PORT"},
-		{"top", "Lookup the running processes of a container"},
 		{"ps", "List containers"},
 		{"pull", "Pull an image or a repository from the docker registry server"},
 		{"push", "Push an image or a repository to the docker registry server"},
@@ -103,6 +102,7 @@ func (cli *DockerCli) CmdHelp(args ...string) error {
 		{"start", "Start a stopped container"},
 		{"stop", "Stop a running container"},
 		{"tag", "Tag an image into a repository"},
+		{"top", "Lookup the running processes of a container"},
 		{"version", "Show the docker version information"},
 		{"wait", "Block until a container stops, then print its exit code"},
 	} {
@@ -251,73 +251,16 @@ func (cli *DockerCli) CmdBuild(args ...string) error {
 
 // 'docker login': login / register a user to registry service.
 func (cli *DockerCli) CmdLogin(args ...string) error {
-	var readStringOnRawTerminal = func(stdin io.Reader, stdout io.Writer, echo bool) string {
-		char := make([]byte, 1)
-		buffer := make([]byte, 64)
-		var i = 0
-		for i < len(buffer) {
-			n, err := stdin.Read(char)
-			if n > 0 {
-				if char[0] == '\r' || char[0] == '\n' {
-					stdout.Write([]byte{'\r', '\n'})
-					break
-				} else if char[0] == 127 || char[0] == '\b' {
-					if i > 0 {
-						if echo {
-							stdout.Write([]byte{'\b', ' ', '\b'})
-						}
-						i--
-					}
-				} else if !unicode.IsSpace(rune(char[0])) &&
-					!unicode.IsControl(rune(char[0])) {
-					if echo {
-						stdout.Write(char)
-					}
-					buffer[i] = char[0]
-					i++
-				}
-			}
-			if err != nil {
-				if err != io.EOF {
-					fmt.Fprintf(stdout, "Read error: %v\r\n", err)
-				}
-				break
-			}
-		}
-		return string(buffer[:i])
-	}
-	var readAndEchoString = func(stdin io.Reader, stdout io.Writer) string {
-		return readStringOnRawTerminal(stdin, stdout, true)
-	}
-	var readString = func(stdin io.Reader, stdout io.Writer) string {
-		return readStringOnRawTerminal(stdin, stdout, false)
-	}
-
 	cmd := Subcmd("login", "[OPTIONS]", "Register or Login to the docker registry server")
-	flUsername := cmd.StringLong("username", 'u', "", "username")
-	flPassword := cmd.StringLong("password", 'p', "", "password")
-	flEmail := cmd.StringLong("email", 'e', "", "email")
+
+	var username, password, email string
+
+	cmd.StringVarLong(&username, "username", 'u', "", "username")
+	cmd.StringVarLong(&password, "password", 'p', "", "password")
+	cmd.StringVarLong(&email, "email", 'e', "", "email")
 	cli.Parse(&cmd, args)
 
-	cli.LoadConfigFile()
-
-	var oldState *term.State
-	var err error
-	if *flUsername == "" || *flPassword == "" || *flEmail == "" {
-		oldState, err = term.SetRawTerminal(cli.terminalFd)
-		if err != nil {
-			return err
-		}
-		defer term.RestoreTerminal(cli.terminalFd, oldState)
-	}
-
-	var (
-		username string
-		password string
-		email    string
-	)
-
-	var promptDefault = func(prompt string, configDefault string) {
+	promptDefault := func(prompt string, configDefault string) {
 		if configDefault == "" {
 			fmt.Fprintf(cli.out, "%s: ", prompt)
 		} else {
@@ -325,47 +268,59 @@ func (cli *DockerCli) CmdLogin(args ...string) error {
 		}
 	}
 
+	readInput := func(in io.Reader, out io.Writer) string {
+		reader := bufio.NewReader(in)
+		line, _, err := reader.ReadLine()
+		if err != nil {
+			fmt.Fprintln(out, err.Error())
+			os.Exit(1)
+		}
+		return string(line)
+	}
+
+	cli.LoadConfigFile()
 	authconfig, ok := cli.configFile.Configs[auth.IndexServerAddress()]
 	if !ok {
 		authconfig = auth.AuthConfig{}
 	}
 
-	if *flUsername == "" {
+	if username == "" {
 		promptDefault("Username", authconfig.Username)
-		username = readAndEchoString(cli.in, cli.out)
+		username = readInput(cli.in, cli.out)
 		if username == "" {
 			username = authconfig.Username
 		}
-	} else {
-		username = *flUsername
 	}
+
 	if username != authconfig.Username {
-		if *flPassword == "" {
+		if password == "" {
+			oldState, _ := term.SaveState(cli.terminalFd)
 			fmt.Fprintf(cli.out, "Password: ")
-			password = readString(cli.in, cli.out)
+
+			term.DisableEcho(cli.terminalFd, oldState)
+
+			password = readInput(cli.in, cli.out)
+			fmt.Fprint(cli.out, "\n")
+
+			term.RestoreTerminal(cli.terminalFd, oldState)
+
 			if password == "" {
 				return fmt.Errorf("Error : Password Required")
 			}
-		} else {
-			password = *flPassword
 		}
 
-		if *flEmail == "" {
+		if email == "" {
 			promptDefault("Email", authconfig.Email)
-			email = readAndEchoString(cli.in, cli.out)
+			email = readInput(cli.in, cli.out)
 			if email == "" {
 				email = authconfig.Email
 			}
-		} else {
-			email = *flEmail
 		}
 	} else {
 		password = authconfig.Password
 		email = authconfig.Email
 	}
-	if oldState != nil {
-		term.RestoreTerminal(cli.terminalFd, oldState)
-	}
+
 	authconfig.Username = username
 	authconfig.Password = password
 	authconfig.Email = email
